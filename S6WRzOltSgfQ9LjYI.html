@@ -1,0 +1,639 @@
+<html><head><base href="." />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #ffd6e6;
+    font-family: 'Press Start 2P', cursive;
+  }
+
+  #game-container {
+    position: relative;
+    width: 600px;
+    text-align: center;
+  }
+
+  #game-canvas {
+    border: 2px solid #4CAF50;
+    background: #000;
+    display: none;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+  }
+
+  #score {
+    color: #4CAF50;
+    font-size: 20px;
+    margin: 10px 0;
+    display: none;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn {
+    background: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s;
+    width: 200px;
+    font-family: 'Press Start 2P', cursive;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ff4444;
+    font-size: 40px;
+    display: none;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+    animation: gameOverPulse 1.5s infinite;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px 40px;
+    border-radius: 10px;
+    z-index: 100;
+  }
+
+  @keyframes gameOverPulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+
+  @keyframes winnerEffect {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .winner-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: gold;
+    font-size: 30px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px 40px;
+    border-radius: 10px;
+    border: 3px solid gold;
+    display: none;
+    z-index: 100;
+    animation: winnerEffect 1s infinite;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  #menu {
+    color: #4CAF50;
+    text-align: center;
+  }
+
+  #menu h1 {
+    font-size: 40px;
+    margin-bottom: 40px;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  @keyframes glow {
+    0% { text-shadow: 0 0 5px #4CAF50; }
+    50% { text-shadow: 0 0 20px #4CAF50, 0 0 30px #45a049; }
+    100% { text-shadow: 0 0 5px #4CAF50; }
+  }
+
+  .menu-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  #campaign-progress {
+    color: #4CAF50;
+    margin: 10px 0;
+    display: none;
+    font-size: 16px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  #level-display {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4CAF50;
+    font-size: 16px;
+    text-align: left;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    border: 2px solid #4CAF50;
+    display: none;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    width: 250px;
+  }
+
+  #best-score-display {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4CAF50;
+    font-size: 16px;
+    text-align: right;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    border: 2px solid #4CAF50;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    width: 250px;
+    display: none;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    margin: 10px 0;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #4CAF50;
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+  }
+
+  .level-complete {
+    color: gold;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+  }
+
+  .candy-segment {
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(255, 182, 193, 0.5);
+  }
+
+  .candy {
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
+  }
+</style>
+</head>
+<body>
+<div id="level-display">
+  <h3>Campaign Progress</h3>
+  <div class="level-info">Target Score: <span id="target-score">0</span></div>
+  <div class="level-info">Current Score: <span id="current-score">0</span></div>
+  <div class="level-info">Current Speed: <span id="current-speed">0</span></div>
+  <div class="level-info current-level" id="current-level">Level: 1</div>
+  <div class="level-info">Snake Length: <span id="snake-length">3</span></div>
+  <div class="progress-bar">
+    <div class="progress-fill"></div>
+  </div>
+  <div class="level-complete">★ Level Complete! ★</div>
+</div>
+
+<div id="best-score-display">
+  <h3>Best Scores</h3>
+  <div class="score-info">Classic Mode: <span id="classic-best">0</span></div>
+  <div class="score-info">Campaign Level: <span id="campaign-best-level">1</span></div>
+  <div class="score-info">Campaign Score: <span id="campaign-best-score">0</span></div>
+</div>
+
+<div id="game-container">
+  <div class="winner-banner">LEVEL COMPLETE!</div>
+  <div id="menu">
+    <h1>Snake Game</h1>
+    <div class="menu-buttons">
+      <button class="btn" id="classic-btn">Classic Mode</button>
+      <button class="btn" id="campaign-btn">Campaign Mode</button>
+      <button class="btn" id="quit-btn">Quit Game</button>
+    </div>
+  </div>
+  <div id="campaign-progress">Level: 1</div>
+  <div id="score">Score: 0</div>
+  <canvas id="game-canvas" width="600" height="400"></canvas>
+  <div class="game-over">GAME OVER</div>
+  <button class="btn" id="back-btn" style="display: none;">Back to Menu</button>
+  <button class="btn" id="restart-btn" style="display: none;">Restart Game</button>
+  <button class="btn" id="pause-btn" style="display: none;">Pause Game</button>
+</div>
+
+<script>
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
+const gameOverElement = document.querySelector('.game-over');
+const menu = document.getElementById('menu');
+const classicBtn = document.getElementById('classic-btn');
+const campaignBtn = document.getElementById('campaign-btn');
+const quitBtn = document.getElementById('quit-btn');
+const backBtn = document.getElementById('back-btn');
+const restartBtn = document.getElementById('restart-btn');
+const pauseBtn = document.getElementById('pause-btn');
+const campaignProgress = document.getElementById('campaign-progress');
+const levelDisplay = document.getElementById('level-display');
+const bestScoreDisplay = document.getElementById('best-score-display');
+const classicBestDisplay = document.getElementById('classic-best');
+const campaignBestLevelDisplay = document.getElementById('campaign-best-level');
+const campaignBestScoreDisplay = document.getElementById('campaign-best-score');
+const targetScoreDisplay = document.getElementById('target-score');
+const currentScoreDisplay = document.getElementById('current-score');
+const currentSpeedDisplay = document.getElementById('current-speed');
+const currentLevelDisplay = document.getElementById('current-level');
+const snakeLengthDisplay = document.getElementById('snake-length');
+const winnerBanner = document.querySelector('.winner-banner');
+
+let gameMode = '';
+let currentLevel = 1;
+const campaignLevels = [
+  { speed: 100, targetScore: 50 },
+  { speed: 90, targetScore: 100 },
+  { speed: 80, targetScore: 150 },
+  { speed: 70, targetScore: 200 },
+  { speed: 60, targetScore: 250 }
+];
+
+let snake = [];
+let food = {};
+let direction = 'right';
+let score = 0;
+let gameLoop;
+let gameSpeed = 100;
+let isGameRunning = false;
+let isPaused = false;
+let classicBestScore = parseInt(localStorage.getItem('classicBestScore')) || 0;
+let campaignBestLevel = parseInt(localStorage.getItem('campaignBestLevel')) || 1;
+let campaignBestScore = parseInt(localStorage.getItem('campaignBestScore')) || 0;
+
+function initGame() {
+  snake = [
+    { x: 5, y: 5 },
+    { x: 4, y: 5 },
+    { x: 3, y: 5 }
+  ];
+  direction = 'right';
+  score = 0;
+  scoreElement.textContent = `Score: ${score}`;
+  generateFood();
+  gameOverElement.style.display = 'none';
+  if (gameLoop) clearInterval(gameLoop);
+  isGameRunning = true;
+  gameLoop = setInterval(updateGame, gameSpeed);
+  updateSnakeLength();
+}
+
+function generateFood() {
+  food = {
+    x: Math.floor(Math.random() * (canvas.width / 20)),
+    y: Math.floor(Math.random() * (canvas.height / 20))
+  };
+  if (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
+    generateFood();
+  }
+}
+
+function updateSnakeLength() {
+  if (snakeLengthDisplay) {
+    snakeLengthDisplay.textContent = snake.length;
+  }
+}
+
+function updateGame() {
+  if (isPaused) return;
+  const head = { x: snake[0].x, y: snake[0].y };
+
+  switch (direction) {
+    case 'up': head.y--; break;
+    case 'down': head.y++; break;
+    case 'left': head.x--; break;
+    case 'right': head.x++; break;
+  }
+
+  if (
+    head.x < 0 || head.x >= (canvas.width / 20) ||
+    head.y < 0 || head.y >= (canvas.height / 20) ||
+    snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)
+  ) {
+    gameOver();
+    return;
+  }
+
+  snake.unshift(head);
+  updateSnakeLength();
+
+  if (head.x === food.x && head.y === food.y) {
+    score += 10;
+    scoreElement.textContent = `Score: ${score}`;
+    
+    if (gameMode === 'classic') {
+      if (score > classicBestScore) {
+        classicBestScore = score;
+        localStorage.setItem('classicBestScore', classicBestScore);
+        updateBestScores();
+      }
+    } else if (gameMode === 'campaign') {
+      const currentLevelData = campaignLevels[currentLevel - 1];
+      let updated = false;
+      if (score >= currentLevelData.targetScore) {
+        winnerBanner.style.display = 'block';
+        isPaused = true;
+        setTimeout(() => {
+          winnerBanner.style.display = 'none';
+          isPaused = false;
+          if (currentLevel < campaignLevels.length) {
+            currentLevel++;
+            campaignProgress.textContent = `Level: ${currentLevel}`;
+            updateLevelDisplay();
+            clearInterval(gameLoop);
+            gameSpeed = campaignLevels[currentLevel - 1].speed;
+            gameLoop = setInterval(updateGame, gameSpeed);
+          }
+        }, 2000);
+        return;
+      }
+      if (currentLevel > campaignBestLevel) {
+        campaignBestLevel = currentLevel;
+        localStorage.setItem('campaignBestLevel', campaignBestLevel);
+        updated = true;
+      }
+      if (score > campaignBestScore) {
+        campaignBestScore = score;
+        localStorage.setItem('campaignBestScore', campaignBestScore);
+        updated = true;
+      }
+      if (updated) {
+        updateBestScores();
+      }
+    }
+    
+    generateFood();
+    updateSnakeLength();
+
+    updateLevelDisplay();
+
+    if (gameMode === 'campaign') {
+      const currentLevelData = campaignLevels[currentLevel - 1];
+      if (score >= currentLevelData.targetScore) {
+        if (currentLevel < campaignLevels.length) {
+          currentLevel++;
+          campaignProgress.textContent = `Level: ${currentLevel}`;
+          updateLevelDisplay();
+          clearInterval(gameLoop);
+          gameSpeed = campaignLevels[currentLevel - 1].speed;
+          gameLoop = setInterval(updateGame, gameSpeed);
+        }
+      }
+    } else if (score % 50 === 0 && gameSpeed > 50) {
+      clearInterval(gameLoop);
+      gameSpeed -= 5;
+      gameLoop = setInterval(updateGame, gameSpeed);
+    }
+  } else {
+    snake.pop();
+  }
+
+  drawGame();
+}
+
+function drawGame() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  snake.forEach((segment, index) => {
+    ctx.beginPath();
+    ctx.fillStyle = index === 0 
+      ? 'rgb(255, 182, 193)' 
+      : index % 2 === 0 
+        ? 'rgb(255, 105, 180)' 
+        : 'rgb(255, 20, 147)'; 
+    
+    const x = segment.x * 20;
+    const y = segment.y * 20;
+    const width = 18;
+    const height = 18;
+    const radius = 8;
+
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.fill();
+    
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.beginPath();
+    ctx.arc(x + 5, y + 5, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = '#FF69B4';
+  ctx.beginPath();
+  const foodX = food.x * 20 + 9;
+  const foodY = food.y * 20 + 9;
+  ctx.arc(foodX, foodY, 9, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.beginPath();
+  ctx.arc(foodX - 3, foodY - 3, 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function gameOver() {
+  isGameRunning = false;
+  clearInterval(gameLoop);
+  gameOverElement.style.display = 'block';
+  backBtn.style.display = 'block';
+  restartBtn.style.display = 'block';
+  
+  if (gameMode === 'campaign') {
+    currentLevel = 1;
+    gameSpeed = campaignLevels[0].speed;
+    campaignProgress.textContent = `Level: ${currentLevel}`;
+    document.querySelector('.progress-fill').style.width = '0%';
+    document.querySelector('.level-complete').style.display = 'none';
+  }
+  
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function showMenu() {
+  menu.style.display = 'block';
+  canvas.style.display = 'none';
+  scoreElement.style.display = 'none';
+  backBtn.style.display = 'none';
+  restartBtn.style.display = 'none';
+  pauseBtn.style.display = 'none';
+  campaignProgress.style.display = 'none';
+  levelDisplay.style.display = 'none';
+  gameOverElement.style.display = 'none';
+  bestScoreDisplay.style.display = 'none';
+  winnerBanner.style.display = 'none';
+  if (gameLoop) clearInterval(gameLoop);
+  
+  score = 0;
+  currentLevel = 1;
+  gameSpeed = 100;
+  snake = [];
+  direction = 'right';
+  isGameRunning = false;
+  isPaused = false;
+}
+
+function startGame(mode) {
+  gameMode = mode;
+  menu.style.display = 'none';
+  canvas.style.display = 'block';
+  scoreElement.style.display = 'block';
+  backBtn.style.display = 'block';
+  restartBtn.style.display = 'block'; 
+  pauseBtn.style.display = 'block';
+  pauseBtn.textContent = 'Pause Game';
+  isPaused = false;
+  bestScoreDisplay.style.display = 'block';
+  
+  winnerBanner.style.display = 'none';
+  
+  if (mode === 'campaign') {
+    campaignProgress.style.display = 'block';
+    levelDisplay.style.display = 'block';
+    gameSpeed = campaignLevels[currentLevel - 1].speed;
+    updateLevelDisplay();
+  } else {
+    campaignProgress.style.display = 'none';
+    levelDisplay.style.display = 'block';
+    targetScoreDisplay.textContent = '-';
+    currentSpeedDisplay.textContent = gameSpeed + 'ms';
+    currentLevelDisplay.textContent = 'Classic Mode';
+    currentScoreDisplay.textContent = score;
+    document.querySelector('.progress-fill').style.width = '0%';
+    document.querySelector('.level-complete').style.display = 'none';
+  }
+  
+  updateBestScores();
+  initGame();
+}
+
+function updateBestScores() {
+  classicBestDisplay.textContent = classicBestScore;
+  campaignBestLevelDisplay.textContent = campaignBestLevel;
+  campaignBestScoreDisplay.textContent = campaignBestScore;
+}
+
+function updateLevelDisplay() {
+  const currentLevelData = campaignLevels[currentLevel - 1];
+  targetScoreDisplay.textContent = currentLevelData.targetScore;
+  currentSpeedDisplay.textContent = currentLevelData.speed + 'ms';
+  currentLevelDisplay.textContent = 'Level: ' + currentLevel;
+  currentScoreDisplay.textContent = score;
+  
+  const progressPercentage = (score / currentLevelData.targetScore) * 100;
+  document.querySelector('.progress-fill').style.width = Math.min(progressPercentage, 100) + '%';
+  
+  const levelComplete = document.querySelector('.level-complete');
+  if (score >= currentLevelData.targetScore) {
+    levelComplete.style.display = 'block';
+  } else {
+    levelComplete.style.display = 'none';
+  }
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  if (isPaused) {
+    clearInterval(gameLoop);
+    pauseBtn.textContent = 'Resume Game';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#4CAF50';
+    ctx.font = '40px "Press Start 2P"';
+    ctx.textAlign = 'center';
+    ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+  } else {
+    pauseBtn.textContent = 'Pause Game';
+    gameLoop = setInterval(updateGame, gameSpeed);
+  }
+}
+
+classicBtn.addEventListener('click', () => startGame('classic'));
+campaignBtn.addEventListener('click', () => startGame('campaign'));
+quitBtn.addEventListener('click', () => window.close());
+backBtn.addEventListener('click', () => {
+  gameOverElement.style.display = 'none';
+  showMenu();
+});
+restartBtn.addEventListener('click', () => {
+  gameOverElement.style.display = 'none';
+  if (gameMode === 'campaign') {
+    currentLevel = 1;
+    gameSpeed = campaignLevels[0].speed;
+    campaignProgress.textContent = `Level: ${currentLevel}`;
+    document.querySelector('.progress-fill').style.width = '0%';
+    document.querySelector('.level-complete').style.display = 'none';
+  }
+  initGame();
+});
+pauseBtn.addEventListener('click', togglePause);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ') { // Spacebar
+    if (isGameRunning) {
+      togglePause();
+    }
+    return;
+  }
+  
+  if (!isGameRunning || isPaused) return;
+  
+  switch (e.key) {
+    case 'ArrowUp':
+      if (direction !== 'down') direction = 'up';
+      break;
+    case 'ArrowDown':
+      if (direction !== 'up') direction = 'down';
+      break;
+    case 'ArrowLeft':
+      if (direction !== 'right') direction = 'left';
+      break;
+    case 'ArrowRight':
+      if (direction !== 'left') direction = 'right';
+      break;
+  }
+});
+
+showMenu();
+
+</script>
+</body></html>
